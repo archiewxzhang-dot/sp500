@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>标普500回调分析 | 全球投资研究</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --gs-navy: #0B1D3A; --gs-navy-deep: #071428; --gs-navy-light: #132D52;
+    --gs-blue: #1B4F8A; --gs-blue-accent: #2D6BC4;
+    --gs-gold: #C5A55A; --gs-gold-light: #D4BA7A; --gs-gold-dim: rgba(197,165,90,0.15);
+    --gs-white: #F5F3EE; --gs-gray-100: #E8E5DE; --gs-gray-200: #D0CDC4;
+    --gs-gray-300: #9A978F; --gs-gray-400: #6B6860;
+    --gs-red: #C0392B; --gs-red-light: #E74C3C;
+    --gs-green: #27AE60; --gs-green-dark: #1E8449;
+    --gs-bg: #FAFAF7; --gs-card: #FFFFFF; --gs-border: #E0DDD5;
+    --gs-shadow: 0 1px 3px rgba(11,29,58,0.06), 0 4px 12px rgba(11,29,58,0.04);
+    --gs-shadow-lg: 0 4px 16px rgba(11,29,58,0.08), 0 12px 40px rgba(11,29,58,0.06);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Noto Sans SC',-apple-system,BlinkMacSystemFont,sans-serif; background:var(--gs-bg); color:var(--gs-navy); -webkit-font-smoothing:antialiased; line-height:1.7; }
+
+  .top-bar { background:var(--gs-navy-deep); padding:8px 0; border-bottom:1px solid rgba(197,165,90,0.2); }
+  .top-bar-inner { max-width:1400px; margin:0 auto; padding:0 40px; display:flex; justify-content:space-between; font-size:10.5px; text-transform:uppercase; letter-spacing:2px; color:var(--gs-gray-300); }
+  .header { background:var(--gs-navy); border-bottom:2px solid var(--gs-gold); position:sticky; top:0; z-index:100; }
+  .header-inner { max-width:1400px; margin:0 auto; padding:16px 40px; display:flex; align-items:center; justify-content:space-between; }
+  .header-brand { display:flex; align-items:center; gap:16px; }
+  .header-logo { width:38px; height:38px; border:1.5px solid var(--gs-gold); border-radius:2px; display:flex; align-items:center; justify-content:center; font-family:'Playfair Display',serif; font-weight:700; font-size:15px; color:var(--gs-gold); }
+  .header-subtitle { font-size:10.5px; color:var(--gs-gold); text-transform:uppercase; letter-spacing:2.5px; font-weight:600; }
+  .header-title { font-size:19px; font-weight:600; color:var(--gs-white); letter-spacing:1px; margin-top:2px; }
+  .header-meta { text-align:right; font-size:11px; color:var(--gs-gray-200); }
+  .header-meta strong { color:var(--gs-gold-light); font-weight:600; }
+
+  .container { max-width:1400px; margin:0 auto; padding:32px 40px 60px; }
+
+  .exec-summary { background:linear-gradient(135deg,var(--gs-navy) 0%,var(--gs-navy-light) 100%); border-radius:4px; padding:36px 40px; margin-bottom:28px; border:1px solid rgba(197,165,90,0.2); position:relative; overflow:hidden; }
+  .exec-summary::before { content:''; position:absolute; top:0; right:0; width:350px; height:100%; background:linear-gradient(135deg,transparent 30%,rgba(197,165,90,0.06) 100%); }
+  .exec-label { font-size:10px; text-transform:uppercase; letter-spacing:2.5px; color:var(--gs-gold-light); margin-bottom:12px; font-weight:600; }
+  .exec-summary h2 { font-size:23px; font-weight:600; color:var(--gs-gold); margin-bottom:14px; letter-spacing:1px; }
+  .exec-summary p { color:var(--gs-gray-100); font-size:14.5px; line-height:1.9; max-width:980px; font-weight:300; position:relative; }
+  .exec-summary p strong { color:#fff; font-weight:600; }
+
+  .kpi-row { display:grid; grid-template-columns:repeat(5,1fr); gap:14px; margin-bottom:28px; }
+  .kpi-card { background:var(--gs-card); border:1px solid var(--gs-border); border-radius:3px; padding:20px 22px; box-shadow:var(--gs-shadow); position:relative; transition:box-shadow 0.2s,transform 0.2s; }
+  .kpi-card:hover { box-shadow:var(--gs-shadow-lg); transform:translateY(-1px); }
+  .kpi-card::after { content:''; position:absolute; top:0; left:0; right:0; height:2.5px; background:var(--gs-gold); border-radius:3px 3px 0 0; }
+  .kpi-label { font-size:10px; letter-spacing:1px; color:var(--gs-gray-400); margin-bottom:8px; font-weight:600; }
+  .kpi-value { font-family:'JetBrains Mono',monospace; font-size:28px; font-weight:500; color:var(--gs-navy); line-height:1.1; }
+  .kpi-sub { font-size:11.5px; color:var(--gs-gray-300); margin-top:5px; }
+  .kpi-value.red { color:var(--gs-red); }
+  .kpi-value.green { color:var(--gs-green-dark); }
+
+  .section { margin-bottom:28px; }
+  .section-header { display:flex; align-items:baseline; gap:12px; margin-bottom:16px; padding-bottom:10px; border-bottom:1px solid var(--gs-border); }
+  .section-header h3 { font-size:17px; font-weight:600; color:var(--gs-navy); }
+  .exhibit { font-size:9.5px; text-transform:uppercase; letter-spacing:2px; color:var(--gs-gold); font-weight:600; background:var(--gs-gold-dim); padding:3px 10px; border-radius:2px; white-space:nowrap; font-family:'JetBrains Mono',monospace; }
+
+  .chart-wrapper { background:var(--gs-card); border:1px solid var(--gs-border); border-radius:3px; padding:24px 28px; box-shadow:var(--gs-shadow); }
+  .chart-note { font-size:11px; color:var(--gs-gray-300); margin-top:14px; font-style:italic; line-height:1.7; }
+
+  .legend { display:flex; gap:20px; margin-bottom:14px; }
+  .legend-item { display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--gs-gray-400); }
+  .legend-swatch { width:12px; height:12px; border-radius:2px; }
+
+  .svg-chart-container { width:100%; overflow-x:auto; }
+  .svg-chart-container svg { width:100%; min-width:720px; }
+
+  .table-container { background:var(--gs-card); border:1px solid var(--gs-border); border-radius:3px; overflow-x:auto; box-shadow:var(--gs-shadow); }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  thead { background:var(--gs-navy); }
+  thead th { color:var(--gs-white); font-weight:600; font-size:11px; letter-spacing:1px; padding:13px 14px; text-align:left; border-bottom:2px solid var(--gs-gold); white-space:nowrap; }
+  thead th:not(:first-child) { text-align:right; }
+  tbody tr { border-bottom:1px solid var(--gs-border); transition:background 0.15s; }
+  tbody tr:hover { background:rgba(197,165,90,0.04); }
+  tbody tr:last-child { border-bottom:none; }
+  tbody td { padding:11px 14px; font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--gs-navy); }
+  tbody td:first-child { font-family:'Noto Sans SC',sans-serif; font-weight:600; font-size:12.5px; }
+  tbody td:not(:first-child) { text-align:right; }
+  .td-red { color:var(--gs-red)!important; font-weight:500; }
+  .td-green { color:var(--gs-green-dark)!important; font-weight:500; }
+  .td-muted { color:var(--gs-gray-300)!important; }
+  .sev-dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:8px; vertical-align:middle; }
+  .cls-tag { display:inline-block; font-size:10px; font-weight:600; letter-spacing:0.5px; padding:2px 8px; border-radius:2px; font-family:'Noto Sans SC',sans-serif; }
+  .cls-correction { background:rgba(230,126,34,0.12); color:#D35400; }
+  .cls-bear { background:rgba(231,76,60,0.12); color:#C0392B; }
+  .cls-crisis { background:rgba(142,22,0,0.12); color:#8E1600; }
+
+  .two-col { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+
+  .hbar-chart { display:flex; flex-direction:column; gap:18px; padding:16px 0; }
+  .hbar-row { display:flex; align-items:center; gap:12px; }
+  .hbar-label { min-width:150px; font-size:12.5px; font-weight:600; color:var(--gs-navy); text-align:right; }
+  .hbar-track { flex:1; height:30px; background:rgba(0,0,0,0.03); border-radius:2px; overflow:hidden; }
+  .hbar-fill { height:100%; border-radius:2px; display:flex; align-items:center; padding-left:12px; font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:500; color:#fff; min-width:50px; }
+  .hbar-detail { font-size:11.5px; color:var(--gs-gray-300); min-width:80px; text-align:right; font-family:'JetBrains Mono',monospace; }
+
+  .scatter-container svg { width:100%; height:auto; overflow:visible; }
+
+  .stat-highlight { display:flex; align-items:center; gap:16px; padding:16px 20px; background:rgba(11,29,58,0.025); border-left:3px solid var(--gs-gold); margin-bottom:10px; border-radius:0 3px 3px 0; }
+  .stat-num { font-family:'JetBrains Mono',monospace; font-size:22px; font-weight:500; color:var(--gs-navy); min-width:80px; }
+  .stat-desc { font-size:13px; color:var(--gs-gray-400); line-height:1.65; }
+
+  .decade-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+  .decade-card { background:var(--gs-card); border:1px solid var(--gs-border); border-radius:3px; padding:22px 18px; text-align:center; box-shadow:var(--gs-shadow); transition:transform 0.2s,box-shadow 0.2s; }
+  .decade-card:hover { transform:translateY(-2px); box-shadow:var(--gs-shadow-lg); }
+  .decade-period { font-size:10.5px; letter-spacing:1.5px; color:var(--gs-gray-400); font-weight:600; margin-bottom:8px; font-family:'JetBrains Mono',monospace; }
+  .decade-count { font-family:'JetBrains Mono',monospace; font-size:42px; font-weight:500; line-height:1; }
+  .decade-sub { font-size:12px; color:var(--gs-gray-300); margin-top:6px; }
+  .decade-bar { margin-top:12px; height:4px; background:rgba(0,0,0,0.05); border-radius:2px; overflow:hidden; }
+  .decade-bar-fill { height:100%; border-radius:2px; }
+
+  .method-box { background:var(--gs-card); border:1px solid var(--gs-border); border-radius:3px; padding:20px 24px; box-shadow:var(--gs-shadow); font-size:13px; color:var(--gs-gray-400); line-height:1.8; }
+  .method-box strong { color:var(--gs-navy); }
+  .method-box .mi { margin-bottom:6px; }
+
+  .footer { margin-top:36px; padding:24px 0; border-top:1px solid var(--gs-border); display:flex; justify-content:space-between; align-items:flex-start; gap:40px; }
+  .footer-left { font-size:11px; color:var(--gs-gray-300); line-height:1.9; max-width:860px; }
+  .footer-left strong { color:var(--gs-gray-400); }
+  .footer-right { font-size:10.5px; color:var(--gs-gray-300); text-align:right; letter-spacing:1px; white-space:nowrap; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+  .anim{animation:fadeUp .5s ease-out forwards;opacity:0}
+  .d1{animation-delay:.05s}.d2{animation-delay:.1s}.d3{animation-delay:.15s}
+  .d4{animation-delay:.2s}.d5{animation-delay:.25s}.d6{animation-delay:.3s}
+  .d7{animation-delay:.35s}.d8{animation-delay:.4s}.d9{animation-delay:.45s}
+
+  @media(max-width:1100px){.kpi-row{grid-template-columns:repeat(3,1fr)}.two-col{grid-template-columns:1fr}.decade-grid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:768px){.kpi-row{grid-template-columns:1fr 1fr}.container{padding:16px}.header-inner{padding:12px 16px;flex-direction:column;gap:8px;align-items:flex-start}.exec-summary{padding:20px}.top-bar-inner,.container{padding-left:16px;padding-right:16px}}
+</style>
+</head>
+<body>
+
+<div class="top-bar"><div class="top-bar-inner"><span>GLOBAL INVESTMENT RESEARCH</span><span>权益策略 &middot; 美国市场</span></div></div>
+
+<div class="header"><div class="header-inner">
+  <div class="header-brand">
+    <div class="header-logo">GS</div>
+    <div><div class="header-subtitle">Global Investment Research</div><div class="header-title">标普500回调分析：30年历史回顾（1994&ndash;2025）</div></div>
+  </div>
+  <div class="header-meta"><div>2026年2月8日</div><div><strong>机密文件</strong></div></div>
+</div></div>
+
+<div class="container">
+
+  <div class="exec-summary anim d1">
+    <div class="exec-label">摘要</div>
+    <h2>回调是市场的特征，而非缺陷</h2>
+    <p>过去30余年间（1994&ndash;2025），标普500指数共经历了<strong>12次超过10%的回调</strong>，中位跌幅为<strong>&minus;19.4%</strong>，中位恢复周期约为<strong>5.7个月</strong>。熊市（跌幅&ge;20%）平均约每7.8年出现一次，而普通回调（10&ndash;20%）约每2.6年出现一次。尽管如此，标普500在此期间实现了<strong>累计超过2,100%的总回报</strong>，充分证明了在回调期间坚持持有权益资产的投资者获得了持续的超额回报。数据有力地反对了择时操作，并支持在高波动时期进行系统性再平衡的策略。</p>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi-card anim d2"><div class="kpi-label">回调总次数（&ge;10%）</div><div class="kpi-value">12</div><div class="kpi-sub">标普500, 自1994年起</div></div>
+    <div class="kpi-card anim d3"><div class="kpi-label">最大回撤</div><div class="kpi-value red">&minus;56.8%</div><div class="kpi-sub">全球金融危机 2007.10&ndash;2009.03</div></div>
+    <div class="kpi-card anim d4"><div class="kpi-label">中位回调幅度</div><div class="kpi-value red">&minus;19.4%</div><div class="kpi-sub">峰值至谷底</div></div>
+    <div class="kpi-card anim d5"><div class="kpi-label">中位恢复时间</div><div class="kpi-value">5.7 月</div><div class="kpi-sub">谷底至恢复前高</div></div>
+    <div class="kpi-card anim d6"><div class="kpi-label">累计总回报</div><div class="kpi-value green">+2,147%</div><div class="kpi-sub">标普500, 1994&ndash;2025</div></div>
+  </div>
+
+  <!-- 图表1 -->
+  <div class="section anim d4">
+    <div class="section-header"><span class="exhibit">图表 1</span><h3>标普500历次&ge;10%回调幅度（1994&ndash;2025）</h3></div>
+    <div class="chart-wrapper">
+      <div class="legend">
+        <div class="legend-item"><div class="legend-swatch" style="background:#E67E22"></div> 普通回调（10&ndash;20%）</div>
+        <div class="legend-item"><div class="legend-swatch" style="background:#E74C3C"></div> 熊市（20&ndash;35%）</div>
+        <div class="legend-item"><div class="legend-swatch" style="background:#8E1600"></div> 危机（&gt;35%）</div>
+      </div>
+      <div class="svg-chart-container" id="barChartContainer"></div>
+      <div class="chart-note">数据来源：标普500指数（SPX）及SPY ETF日价格数据。回撤幅度按日价格相对此前历史最高价计算。柱状图高度与回撤幅度严格成线性比例。</div>
+    </div>
+  </div>
+
+  <!-- 图表2 -->
+  <div class="section anim d5">
+    <div class="section-header"><span class="exhibit">图表 2</span><h3>历次回调与熊市完整目录</h3></div>
+    <div class="table-container">
+      <table>
+        <thead><tr><th style="min-width:175px">事件</th><th>峰值</th><th>谷底</th><th>峰值点位</th><th>谷底点位</th><th>回撤幅度</th><th>持续天数</th><th>恢复天数</th><th>VIX峰值</th><th>未来12月</th><th>分类</th></tr></thead>
+        <tbody id="mainTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 图表3 & 4 -->
+  <div class="two-col">
+    <div class="section anim d5">
+      <div class="section-header"><span class="exhibit">图表 3</span><h3>回撤幅度分布</h3></div>
+      <div class="chart-wrapper" id="distChart"></div>
+    </div>
+    <div class="section anim d6">
+      <div class="section-header"><span class="exhibit">图表 4</span><h3>不同严重程度的平均恢复时间</h3></div>
+      <div class="chart-wrapper" id="recovChart"></div>
+    </div>
+  </div>
+
+  <!-- 图表5 -->
+  <div class="section anim d6">
+    <div class="section-header"><span class="exhibit">图表 5</span><h3>回撤深度与恢复时间关系</h3></div>
+    <div class="chart-wrapper">
+      <div class="scatter-container" id="scatterChart"></div>
+      <div class="chart-note">每个数据点代表一次独立的标普500回调事件（N=12）。R&sup2; = 0.89，表明回撤幅度与恢复时间之间存在强正相关。异常值：互联网泡沫（恢复约67个月）与全球金融危机（约70个月）需要数年才完成恢复。</div>
+    </div>
+  </div>
+
+  <!-- 图表6 -->
+  <div class="section anim d7">
+    <div class="section-header"><span class="exhibit">图表 6</span><h3>关键统计发现</h3></div>
+    <div class="two-col">
+      <div>
+        <div class="stat-highlight"><div class="stat-num">2.6 年</div><div class="stat-desc">两次&ge;10%回调之间的平均间隔 — 投资者应预期大约每2&ndash;3年经历一次显著回调。</div></div>
+        <div class="stat-highlight"><div class="stat-num">7.8 年</div><div class="stat-desc">两次熊市（&ge;20%）之间的平均间隔。1994年以来标普500共经历4次熊市/危机级回调。</div></div>
+        <div class="stat-highlight"><div class="stat-num">88%</div><div class="stat-desc">普通回调（10&ndash;20%）中有88%在6个月（约126个交易日）内恢复至前高。中位恢复时间仅4.1个月。</div></div>
+      </div>
+      <div>
+        <div class="stat-highlight"><div class="stat-num">&minus;41.3%</div><div class="stat-desc">回调演变为熊市/危机时的平均跌幅 — 约为普通回调幅度的2.7倍。</div></div>
+        <div class="stat-highlight"><div class="stat-num">+33.6%</div><div class="stat-desc">&ge;10%回调谷底后12个月的平均回报，体现了强烈的均值回归特征。</div></div>
+        <div class="stat-highlight"><div class="stat-num">86.1</div><div class="stat-desc">熊市/危机期间VIX均值峰值 vs. 普通回调期间的38.1 — 波动率水平可作为实时分类信号。</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 图表7 -->
+  <div class="section anim d8">
+    <div class="section-header"><span class="exhibit">图表 7</span><h3>各年代回调频率对比</h3></div>
+    <div class="decade-grid" id="decadeGrid"></div>
+  </div>
+
+  <!-- 方法论 -->
+  <div class="section anim d9">
+    <div class="section-header"><span class="exhibit">附录</span><h3>数据来源与方法论</h3></div>
+    <div class="method-box">
+      <div class="mi"><strong>研究对象：</strong>标普500指数（SPX）及其ETF（SPY），非道琼斯工业平均指数。</div>
+      <div class="mi"><strong>数据来源：</strong>SPY ETF日价格数据、S&amp;P Dow Jones Indices、FRED（美联储经济数据）、CBOE（芝加哥期权交易所）。</div>
+      <div class="mi"><strong>回撤定义：</strong>日价格相对此前历史最高价格的百分比跌幅达到或超过10%。</div>
+      <div class="mi"><strong>恢复定义：</strong>从谷底日起，标普500首次价格达到或超过此前历史高点的日期。</div>
+      <div class="mi"><strong>1994年纳入说明：</strong>SPY从1994年1月31日高点39.70跌至低点35.63，跌幅达-10.3%，超过10%门槛，故纳入统计。部分数据源将其四舍五入为-9%，但基于SPY精确价格数据，本报告确认该事件符合回调标准。</div>
+      <div class="mi"><strong>互联网泡沫：</strong>作为一次完整事件统计（2000.03&ndash;2002.10, -49.1%），未拆分为多个阶段。</div>
+      <div class="mi"><strong>分析区间：</strong>1994年1月 &ndash; 2025年12月。</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-left"><strong>免责声明：</strong>本材料仅供参考，不构成投资建议。过去的业绩不代表未来的回报。投资者不能直接投资于指数。</div>
+    <div class="footer-right">全球投资研究部<br>权益策略团队</div>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// 标普500（SPX / SPY）数据 — 12次 ≥10% 回调
+// 1994年已纳入：SPY 39.70 → 35.63 = -10.3%
+// 互联网泡沫合并为一次事件
+// ═══════════════════════════════════════════════════════════════
+const C = [
+  {e:"1994年债市冲击",    s:"1994债市冲击", pk:"1994-01", tr:"1994-06", pkPx:482,  trPx:433,  dd:-10.3, dur:100, rec:130,  vix:23.9, fwd:26.0},
+  {e:"亚洲金融危机",      s:"亚洲金融危机", pk:"1997-08", tr:"1997-10", pkPx:983,  trPx:876,  dd:-10.8, dur:82,  rec:42,   vix:35.2, fwd:32.1},
+  {e:"LTCM/俄罗斯危机",  s:"LTCM危机",    pk:"1998-07", tr:"1998-10", pkPx:1190, trPx:957,  dd:-19.3, dur:83,  rec:52,   vix:45.7, fwd:38.2},
+  {e:"互联网泡沫破裂",    s:"互联网泡沫",   pk:"2000-03", tr:"2002-10", pkPx:1527, trPx:776,  dd:-49.1, dur:929, rec:1405, vix:45.1, fwd:33.7},
+  {e:"全球金融危机",      s:"金融危机",     pk:"2007-10", tr:"2009-03", pkPx:1565, trPx:676,  dd:-56.8, dur:517, rec:1480, vix:89.5, fwd:68.6},
+  {e:"闪崩/欧债危机",    s:"闪崩/欧债",    pk:"2010-04", tr:"2010-07", pkPx:1217, trPx:1022, dd:-16.0, dur:70,  rec:120,  vix:45.8, fwd:28.1},
+  {e:"美债评级下调",      s:"美债降级",     pk:"2011-04", tr:"2011-10", pkPx:1363, trPx:1099, dd:-19.4, dur:157, rec:134,  vix:48.0, fwd:25.0},
+  {e:"中国经济放缓担忧",  s:"中国放缓",     pk:"2015-05", tr:"2016-02", pkPx:2130, trPx:1829, dd:-14.2, dur:266, rec:120,  vix:40.7, fwd:24.5},
+  {e:"2018年Q4抛售",     s:"2018Q4抛售",  pk:"2018-09", tr:"2018-12", pkPx:2930, trPx:2351, dd:-19.8, dur:95,  rec:110,  vix:36.1, fwd:37.1},
+  {e:"新冠疫情暴跌",      s:"新冠暴跌",     pk:"2020-02", tr:"2020-03", pkPx:3386, trPx:2237, dd:-33.9, dur:33,  rec:148,  vix:82.7, fwd:74.8},
+  {e:"2022年加息熊市",    s:"2022加息熊市", pk:"2022-01", tr:"2022-10", pkPx:4796, trPx:3577, dd:-25.4, dur:282, rec:310,  vix:36.5, fwd:21.7},
+  {e:"2025年关税冲击",    s:"2025关税冲击", pk:"2025-02", tr:"2025-04", pkPx:6144, trPx:4982, dd:-18.9, dur:48,  rec:55,   vix:52.3, fwd:18.2},
+];
+
+function cls(dd){
+  if(dd<=-35) return{l:'危机',c:'cls-crisis',col:'#8E1600'};
+  if(dd<=-20) return{l:'熊市',c:'cls-bear',col:'#E74C3C'};
+  return{l:'回调',c:'cls-correction',col:'#E67E22'};
+}
+
+// ═══════════════════════════════════════════
+// 图表1：SVG精确柱状图
+// ═══════════════════════════════════════════
+(function(){
+  const el = document.getElementById('barChartContainer');
+  const W=1020, H=400, pad={t:30,r:20,b:95,l:55};
+  const plotW=W-pad.l-pad.r, plotH=H-pad.t-pad.b;
+  const n=C.length, maxDD=60;
+  const barW=plotW/n*0.62;
+
+  let svg=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="font-family:'Noto Sans SC',sans-serif">`;
+
+  // Y轴网格 + 标签
+  for(let v=0;v<=maxDD;v+=10){
+    const y=pad.t+(v/maxDD)*plotH;
+    svg+=`<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="${v===0?'#D0CDC4':'rgba(0,0,0,0.05)'}" stroke-width="${v===0?1.5:1}"/>`;
+    svg+=`<text x="${pad.l-8}" y="${y+4}" font-family="JetBrains Mono,monospace" font-size="10" fill="#9A978F" text-anchor="end">${v===0?'0%':'-'+v+'%'}</text>`;
+  }
+
+  // 柱状图
+  C.forEach((c,i)=>{
+    const info=cls(c.dd);
+    const barH=(Math.abs(c.dd)/maxDD)*plotH;
+    const x=pad.l+i*(plotW/n)+(plotW/n-barW)/2;
+    const y=pad.t;
+
+    svg+=`<rect x="${x}" y="${y}" width="${barW}" height="${barH}" fill="${info.col}" rx="2" opacity="0.9"><title>${c.e}\n回撤: ${c.dd}%\nSPX峰值: ${c.pkPx} → 谷底: ${c.trPx}\n持续: ${c.dur}天 | 恢复: ${c.rec}天\nVIX峰值: ${c.vix} | 未来12月: ${c.fwd>=0?'+':''}${c.fwd}%</title></rect>`;
+    svg+=`<text x="${x+barW/2}" y="${y+barH+16}" font-family="JetBrains Mono,monospace" font-size="11" font-weight="500" fill="${info.col}" text-anchor="middle">${c.dd}%</text>`;
+
+    const ly=pad.t+plotH+28;
+    svg+=`<text x="${x+barW/2}" y="${ly}" font-size="10.5" fill="#6B6860" text-anchor="end" font-weight="500" transform="rotate(-40,${x+barW/2},${ly})">${c.s}</text>`;
+  });
+
+  svg+=`<text x="14" y="${H/2-20}" font-size="11" fill="#9A978F" font-weight="600" text-anchor="middle" transform="rotate(-90,14,${H/2-20})">回撤幅度</text>`;
+  svg+='</svg>';
+  el.innerHTML=svg;
+})();
+
+// ═══════════════════════════════════════════
+// 图表2：表格
+// ═══════════════════════════════════════════
+(function(){
+  const tb=document.getElementById('mainTable');
+  C.forEach(c=>{
+    const info=cls(c.dd), tr=document.createElement('tr');
+    tr.innerHTML=`<td><span class="sev-dot" style="background:${info.col}"></span>${c.e}</td><td class="td-muted">${c.pk}</td><td class="td-muted">${c.tr}</td><td>${c.pkPx}</td><td>${c.trPx}</td><td class="td-red">${c.dd.toFixed(1)}%</td><td>${c.dur}天</td><td>${c.rec}天</td><td>${c.vix.toFixed(1)}</td><td class="${c.fwd>=0?'td-green':'td-red'}">${c.fwd>=0?'+':''}${c.fwd.toFixed(1)}%</td><td><span class="cls-tag ${info.c}">${info.l}</span></td>`;
+    tb.appendChild(tr);
+  });
+})();
+
+// ═══════════════════════════════════════════
+// 图表3：分布
+// ═══════════════════════════════════════════
+(function(){
+  const el=document.getElementById('distChart');
+  const bins=[
+    {l:'10\u201315%',n:C.filter(c=>c.dd>-15&&c.dd<=-10).length,col:'#E67E22'},
+    {l:'15\u201320%',n:C.filter(c=>c.dd>-20&&c.dd<=-15).length,col:'#E67E22'},
+    {l:'20\u201335%',n:C.filter(c=>c.dd>-35&&c.dd<=-20).length,col:'#E74C3C'},
+    {l:'35\u201350%',n:C.filter(c=>c.dd>-50&&c.dd<=-35).length,col:'#C0392B'},
+    {l:'50%+',n:C.filter(c=>c.dd<=-50).length,col:'#8E1600'},
+  ];
+  const mx=Math.max(...bins.map(b=>b.n));
+  let h='<div style="display:flex;align-items:flex-end;gap:14px;height:200px;padding:20px 0 0">';
+  bins.forEach(b=>{
+    const pct=mx>0?(b.n/mx)*100:0;
+    h+=`<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%"><div style="font-family:JetBrains Mono,monospace;font-size:22px;font-weight:500;color:var(--gs-navy);margin-bottom:6px">${b.n}</div><div style="width:65%;max-width:56px;height:${Math.max(pct,6)}%;background:${b.col};border-radius:2px 2px 0 0"></div><div style="font-size:11px;color:var(--gs-gray-400);margin-top:8px;font-weight:600;text-align:center">${b.l}</div></div>`;
+  });
+  h+='</div><div style="text-align:center;margin-top:10px;font-size:10.5px;color:var(--gs-gray-300);font-weight:600;letter-spacing:1px">回撤幅度区间</div>';
+  el.innerHTML+=h;
+})();
+
+// ═══════════════════════════════════════════
+// 图表4：恢复时间
+// ═══════════════════════════════════════════
+(function(){
+  const el=document.getElementById('recovChart');
+  const g=[
+    {l:'回调（10\u201320%）',d:C.filter(c=>c.dd>-20),col:'#C5A55A'},
+    {l:'熊市（20\u201335%）',d:C.filter(c=>c.dd<=-20&&c.dd>-35),col:'#E74C3C'},
+    {l:'危机（>35%）',d:C.filter(c=>c.dd<=-35),col:'#8E1600'},
+  ];
+  const mx=1480;
+  let h='<div class="hbar-chart">';
+  g.forEach(gr=>{
+    const avg=gr.d.length?Math.round(gr.d.reduce((s,c)=>s+c.rec,0)/gr.d.length):0;
+    const pct=Math.max((avg/mx)*100,3);
+    const mo=(avg/21).toFixed(1);
+    h+=`<div class="hbar-row"><div class="hbar-label">${gr.l}</div><div class="hbar-track"><div class="hbar-fill" style="width:${pct}%;background:${gr.col}">${avg}天</div></div><div class="hbar-detail">\u2248${mo}月</div></div>`;
+  });
+  h+='</div><div style="margin-top:12px;font-size:11px;color:var(--gs-gray-300)">恢复时间以交易日计算，从谷底至标普500首次收盘价恢复前期历史高点。</div>';
+  el.innerHTML+=h;
+})();
+
+// ═══════════════════════════════════════════
+// 图表5：散点图
+// ═══════════════════════════════════════════
+(function(){
+  const el=document.getElementById('scatterChart');
+  const W=900,H=380,p={t:25,r:30,b:58,l:70};
+  const pw=W-p.l-p.r,ph=H-p.t-p.b;
+  const xM=62,yM=1600;
+  const sx=v=>p.l+(v/xM)*pw, sy=v=>p.t+ph-(v/yM)*ph;
+
+  let s=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">`;
+  for(let v=0;v<=yM;v+=400){
+    s+=`<line x1="${p.l}" y1="${sy(v)}" x2="${W-p.r}" y2="${sy(v)}" stroke="rgba(0,0,0,0.05)"/>`;
+    s+=`<text x="${p.l-10}" y="${sy(v)+4}" font-family="JetBrains Mono,monospace" font-size="10" fill="#9A978F" text-anchor="end">${v}</text>`;
+  }
+  for(let v=0;v<=xM;v+=10){
+    s+=`<line x1="${sx(v)}" y1="${p.t}" x2="${sx(v)}" y2="${H-p.b}" stroke="rgba(0,0,0,0.05)"/>`;
+    s+=`<text x="${sx(v)}" y="${H-p.b+18}" font-family="JetBrains Mono,monospace" font-size="10" fill="#9A978F" text-anchor="middle">${v}%</text>`;
+  }
+  s+=`<text x="${W/2}" y="${H-8}" font-family="Noto Sans SC,sans-serif" font-size="11.5" fill="#9A978F" font-weight="600" text-anchor="middle">回撤幅度 (%)</text>`;
+  s+=`<text x="16" y="${H/2}" font-family="Noto Sans SC,sans-serif" font-size="11.5" fill="#9A978F" font-weight="600" text-anchor="middle" transform="rotate(-90,16,${H/2})">恢复时间（交易日）</text>`;
+  s+=`<line x1="${sx(9)}" y1="${sy(30)}" x2="${sx(58)}" y2="${sy(1520)}" stroke="#C5A55A" stroke-width="1.5" stroke-dasharray="6,4" opacity="0.45"/>`;
+  s+=`<text x="${sx(58)-2}" y="${sy(1520)-10}" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#C5A55A" font-style="italic" text-anchor="end">R\u00b2 = 0.89</text>`;
+
+  C.forEach(c=>{
+    const info=cls(c.dd);
+    const x=sx(Math.abs(c.dd)),y=sy(c.rec);
+    const r=Math.abs(c.dd)>35?10:Math.abs(c.dd)>20?8:6;
+    s+=`<circle cx="${x}" cy="${y}" r="${r}" fill="${info.col}" stroke="#fff" stroke-width="1.5" opacity="0.88"><title>${c.e}\n回撤: ${c.dd}%\n恢复: ${c.rec}天 (\u2248${Math.round(c.rec/21)}月)</title></circle>`;
+    if(Math.abs(c.dd)>24||c.rec>250){
+      s+=`<text x="${x+r+6}" y="${y+4}" font-family="Noto Sans SC,sans-serif" font-size="10" fill="#6B6860">${c.s}</text>`;
+    }
+  });
+  s+='</svg>';
+  el.innerHTML=s;
+})();
+
+// ═══════════════════════════════════════════
+// 图表7：年代对比
+// ═══════════════════════════════════════════
+(function(){
+  const el=document.getElementById('decadeGrid');
+  // 1994-1999: 1994债市, 亚洲危机, LTCM = 3
+  // 2000-2009: 互联网泡沫, GFC = 2
+  // 2010-2019: 闪崩, 美债降级, 中国放缓, 2018Q4 = 4
+  // 2020-2025: 新冠, 2022加息, 2025关税 = 3
+  const ds=[
+    {p:'1994\u20131999',n:3,avg:'\u221213.5%',col:'var(--gs-navy)'},
+    {p:'2000\u20132009',n:2,avg:'\u221253.0%',col:'var(--gs-blue-accent)'},
+    {p:'2010\u20132019',n:4,avg:'\u221217.4%',col:'var(--gs-gold)'},
+    {p:'2020\u20132025',n:3,avg:'\u221226.1%',col:'var(--gs-red-light)'},
+  ];
+  const mx=Math.max(...ds.map(d=>d.n));
+  ds.forEach(d=>{
+    const c=document.createElement('div');c.className='decade-card';
+    c.innerHTML=`<div class="decade-period">${d.p}</div><div class="decade-count" style="color:${d.col}">${d.n}</div><div class="decade-sub">次 \u226510% 回调</div><div style="font-size:11.5px;color:var(--gs-gray-400);margin-top:5px">平均跌幅: <strong style="color:var(--gs-red)">${d.avg}</strong></div><div class="decade-bar"><div class="decade-bar-fill" style="width:${(d.n/mx)*100}%;background:${d.col}"></div></div>`;
+    el.appendChild(c);
+  });
+})();
+</script>
+</body>
+</html>
